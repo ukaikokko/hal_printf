@@ -1,15 +1,22 @@
 #include "hal_printf.h"
+#include "stm32f4xx_hal_def.h"
+#include "stm32f4xx_hal_uart.h"
 
-#include "usart.h"
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 
 volatile static bool flag = true;
 static bool isEnableDMA = false;
+static bool isInitialized = false;
+
 UART_HandleTypeDef *HUART = NULL;
 
-void HAL_printf(const char *format, ...) {
+HAL_StatusTypeDef HAL_printf(const char *format, ...) {
+  if (!isInitialized) {
+    return false;
+  }
+
   static char result[100];
 
   while (!flag)
@@ -23,7 +30,7 @@ void HAL_printf(const char *format, ...) {
   va_end(args);
 
   if (len <= 0 || len >= sizeof(result)) {
-    return;
+    return HAL_ERROR;
   }
 
   flag = false;
@@ -38,18 +45,29 @@ void HAL_printf(const char *format, ...) {
 
   if (status != HAL_OK) {
     flag = true;
+    return status;
   }
+
+  return HAL_OK;
 }
 
-HAL_StatusTypeDef HAL_printf_EnableDMA(UART_HandleTypeDef *huart) {
-  isEnableDMA = true;
-  HUART = huart;
-  return HAL_UART_RegisterCallback(HUART, HAL_UART_TX_COMPLETE_CB_ID,
-                                   &HAL_printf_UART_Callback);
-}
+void HAL_printf_SetInstance(UART_HandleTypeDef *huart) { HUART = huart; }
 
 void HAL_printf_UART_Callback(UART_HandleTypeDef *huart) {
   if (huart->Instance == USART2) {
     flag = true;
+  }
+}
+
+HAL_StatusTypeDef HAL_printf_EnableDMA() {
+  HAL_StatusTypeDef status;
+  status = HAL_UART_RegisterCallback(HUART, HAL_UART_TX_COMPLETE_CB_ID,
+                                     &HAL_printf_UART_Callback);
+
+  if (status != HAL_OK) {
+    return status;
+  } else {
+    isEnableDMA = true;
+    return HAL_OK;
   }
 }
