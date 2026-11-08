@@ -57,7 +57,7 @@ void HAL_printf_UART_Callback(UART_HandleTypeDef *huart) {
   }
 }
 
-HAL_StatusTypeDef HAL_printf_EnableDMA() {
+HAL_StatusTypeDef HAL_printf_EnableDMA(void) {
   HAL_StatusTypeDef status;
   status = HAL_UART_RegisterCallback(HUART, HAL_UART_TX_COMPLETE_CB_ID,
                                      &HAL_printf_UART_Callback);
