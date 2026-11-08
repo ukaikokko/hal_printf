@@ -1,6 +1,4 @@
 #include "hal_printf.h"
-#include "stm32f4xx_hal_def.h"
-#include "stm32f4xx_hal_uart.h"
 
 #include <stdarg.h>
 #include <stdbool.h>
