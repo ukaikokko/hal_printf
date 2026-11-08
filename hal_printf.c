@@ -46,13 +46,20 @@ HAL_StatusTypeDef HAL_printf(const char *format, ...) {
     return status;
   }
 
+  if (!isEnableDMA) {
+    flag = true;
+  }
+
   return HAL_OK;
 }
 
-void HAL_printf_SetInstance(UART_HandleTypeDef *huart) { HUART = huart; }
+void HAL_printf_SetInstance(UART_HandleTypeDef *huart) {
+  HUART = huart;
+  isInitialized = (huart != NULL);
+}
 
 void HAL_printf_UART_Callback(UART_HandleTypeDef *huart) {
-  if (huart->Instance == USART2) {
+  if (HUART != NULL && huart->Instance == HUART->Instance) {
     flag = true;
   }
 }
